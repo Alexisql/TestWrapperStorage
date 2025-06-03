@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,6 +21,20 @@ class HomeViewModel @Inject constructor(
 
     private val _preferences = MutableStateFlow<List<Pair<String, *>>>(emptyList())
     val preferences: StateFlow<List<Pair<String, *>>> = _preferences.asStateFlow()
+
+    private val _login = MutableStateFlow("")
+    val login: StateFlow<String> = _login.asStateFlow()
+
+    fun getLogin() {
+        viewModelScope.launch {
+            val userKey = StorageKey<String>("Login", "LoginScreen", "Alexis")
+            storageManager.getPreference(userKey, "")
+                .flowOn(dispatcherIO)
+                .collect { value ->
+                    _login.value = value
+                }
+        }
+    }
 
     fun <T> saveData(key: StorageKey<T>, value: T) {
         viewModelScope.launch {
@@ -38,9 +51,7 @@ class HomeViewModel @Inject constructor(
     fun getPreferencesByScreen(screen: String) {
         viewModelScope.launch {
             val preferencesByScreen = storageManager.getPreferencesByScreen(screen)
-            preferencesByScreen.catch {
-                _preferences.value = emptyList()
-            }
+            preferencesByScreen
                 .flowOn(dispatcherIO)
                 .collect {
                     _preferences.value = it.toMap().toList()

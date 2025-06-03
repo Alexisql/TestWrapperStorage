@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.alexis.testwrapperstorage.R
 import com.alexis.testwrapperstorage.ui.core.ShowButton
 import com.alexis.testwrapperstorage.ui.core.ShowSpacer
@@ -23,7 +24,7 @@ import com.alexis.testwrapperstorage.ui.core.ShowTextField
 import com.alexis.wrapperstorage.domain.model.StorageKey
 
 @Composable
-fun LoginScreen(modifier: Modifier, viewModel: LoginViewModel) {
+fun LoginScreen(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
     var login by remember { mutableStateOf("") }
     Box(
         modifier = modifier
@@ -47,6 +48,7 @@ fun LoginScreen(modifier: Modifier, viewModel: LoginViewModel) {
             ShowButton("Login") {
                 val userKey = StorageKey<String>("Login", "LoginScreen", "Alexis")
                 viewModel.saveData(userKey, login)
+                navController.navigate("Home")
             }
             ShowSpacer(size = 14)
         }
