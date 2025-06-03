@@ -27,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexis.testwrapperstorage.R
 import com.alexis.testwrapperstorage.domain.model.User
@@ -51,12 +53,24 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
     val preferencesState by viewModel.preferences.collectAsStateWithLifecycle()
     viewModel.getPreferencesByScreen("HomeScreen")
 
+    val login by viewModel.login.collectAsStateWithLifecycle()
+    viewModel.getLogin()
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
         Column(modifier = modifier) {
+            Text(
+                textAlign = TextAlign.Center,
+                text = login,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
             ShowSpacer(size = 20)
             ShowTextField(
                 text = preferenceString,
@@ -153,7 +167,7 @@ fun ItemPreference(key: String, preference: String, onDelete: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp), // Ajusta el padding
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
