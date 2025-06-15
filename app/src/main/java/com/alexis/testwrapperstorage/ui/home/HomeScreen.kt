@@ -1,5 +1,6 @@
 package com.alexis.testwrapperstorage.ui.home
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,15 +35,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.alexis.testwrapperstorage.R
 import com.alexis.testwrapperstorage.domain.model.User
 import com.alexis.testwrapperstorage.ui.core.ShowButton
 import com.alexis.testwrapperstorage.ui.core.ShowSpacer
 import com.alexis.testwrapperstorage.ui.core.ShowTextField
+import com.alexis.testwrapperstorage.ui.core.state.ResultState
 import com.alexis.wrapperstorage.domain.model.StorageKey
 
 @Composable
-fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
+fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel, navController: NavHostController) {
+    when (val state = viewModel.state.collectAsStateWithLifecycle().value) {
+        is ResultState.Failure -> {
+            viewModel.resetState()
+            navController.navigate("Error/${state.exception.message}")
+        }
+
+        else -> {
+            ShowContentHomeScreen(modifier, viewModel)
+        }
+    }
+}
+
+@Composable
+fun ShowContentHomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
     var preferenceString by remember { mutableStateOf("") }
     var preferenceInt by remember { mutableStateOf("") }
     var preferenceUser by remember { mutableStateOf("") }
@@ -50,11 +68,9 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
     val intKey = StorageKey<Int>("Integer", "HomeScreen", "Alexis")
     val userKey = StorageKey<User>("User", "HomeScreen", "Alexis")
 
-    val preferencesState by viewModel.preferences.collectAsStateWithLifecycle()
-    viewModel.getPreferencesByScreen("HomeScreen")
-
     val login by viewModel.login.collectAsStateWithLifecycle()
-    viewModel.getLogin()
+    val preferences by viewModel.preferences.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -77,7 +93,10 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
                 onValueChange = { preferenceString = it }
             )
             ShowSpacer(size = 10)
-            ShowButton("Save String") {
+            ShowButton(
+                modifier = Modifier.fillMaxWidth(),
+                label = "Save String"
+            ) {
                 viewModel.saveData(stringKey, preferenceString)
                 preferenceString = ""
             }
@@ -88,9 +107,17 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
                 onValueChange = { preferenceInt = it }
             )
             ShowSpacer(size = 10)
-            ShowButton("Save Integer") {
-                viewModel.saveData(intKey, preferenceInt.toInt())
-                preferenceInt = ""
+            ShowButton(
+                modifier = Modifier.fillMaxWidth(),
+                label = "Save Integer"
+            ) {
+                val intValue = preferenceInt.toIntOrNull()
+                if (intValue == null) {
+                    Toast.makeText(context, "Ingresa un numero valido", Toast.LENGTH_SHORT).show()
+                } else {
+                    viewModel.saveData(intKey, intValue)
+                    preferenceInt = ""
+                }
             }
             ShowSpacer(size = 14)
             ShowTextField(
@@ -98,7 +125,10 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
                 onValueChange = { preferenceUser = it }
             )
             ShowSpacer(size = 10)
-            ShowButton("Save Object") {
+            ShowButton(
+                modifier = Modifier.fillMaxWidth(),
+                label = "Save Object"
+            ) {
                 viewModel.saveData(
                     userKey,
                     User(name = preferenceUser, age = 30, email = "test@gmail.com")
@@ -106,22 +136,24 @@ fun HomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
                 preferenceUser = ""
             }
             ShowSpacer(size = 10)
-            Card(
-                shape = RoundedCornerShape(10.dp),
-                elevation = CardDefaults.cardElevation(5.dp)
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 10.dp)
+            if(preferences.isNotEmpty()){
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = CardDefaults.cardElevation(5.dp)
                 ) {
-                    item {
-                        HeaderTable(modifier = Modifier.padding(vertical = 8.dp))
-                        ShowSpacer(5)
-                    }
-                    items(preferencesState) { (key, value) ->
-                        ItemPreference(key, value.toString()) {
-                            viewModel.removeData(key)
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(all = 10.dp)
+                    ) {
+                        item {
+                            HeaderTable(modifier = Modifier.padding(vertical = 8.dp))
+                            ShowSpacer(5)
+                        }
+                        items(preferences) { (key, value) ->
+                            ItemPreference(key, value.toString()) {
+                                viewModel.removeData(key)
+                            }
                         }
                     }
                 }

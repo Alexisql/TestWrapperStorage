@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.alexis.testwrapperstorage.ui.core.ErrorScreen
 import com.alexis.testwrapperstorage.ui.home.HomeScreen
 import com.alexis.testwrapperstorage.ui.home.HomeViewModel
 import com.alexis.testwrapperstorage.ui.login.LoginScreen
@@ -39,7 +42,20 @@ class MainActivity : ComponentActivity() {
                     composable("Home") {
                         HomeScreen(
                             modifier = Modifier.padding(innerPadding),
-                            viewModel = homeViewModel
+                            viewModel = homeViewModel,
+                            navController = navigationController
+                        )
+                    }
+                    composable(
+                        route = "Error/{message}",
+                        arguments = listOf(navArgument("message") {
+                            type = NavType.StringType
+                        })
+                    ) { backStackEntry ->
+                        ErrorScreen(
+                            modifier = Modifier.padding(innerPadding),
+                            message = backStackEntry.arguments?.getString("message")!!,
+                            navController = navigationController
                         )
                     }
                 }
