@@ -3,4 +3,5 @@
     <string name="description_logo">Logo MELI</string>
     <string name="text_button">Save Preferences</string>
     <string name="text_delete">Delete</string>
+    <string name="error_icon">Warning</string>
 </resources>

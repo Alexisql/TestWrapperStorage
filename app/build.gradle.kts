@@ -50,7 +50,7 @@ dependencies {
     //Wrapper Storage
     implementation(libs.storage)
 
-    //Naviagtion Compose
+    //Navigation Compose
     implementation(libs.navigation.compose)
 
     implementation(libs.androidx.core.ktx)
